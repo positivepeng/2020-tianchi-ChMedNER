@@ -14,6 +14,31 @@
 #### 3. 模型融合
 
 
+### 门头沟战队_冠军比赛攻略[原文链接](https://tianchi.aliyun.com/forum/postDetail?postId=155393)
+1. 数据预处理
+    数据特点：长文本多、数据量少，实体不平衡，句子太长进行分割，
+2. 模型设计
+    baseline:BERT-CRF，细节
+ - 预训练模型：选用 UER-large-24 layer[1]，UER在RoBerta-wwm框架下采用大规模优质中文语料继续训练，CLUE 任务中单模第一
+ - 差分学习率：BERT层学习率2e-5；其他层学习率2e-3
+ - 参数初始化：模型其他模块与BERT采用相同的初始化方式
+ - 滑动参数平均：加权平均最后几个epoch模型的权重，得到更加平滑和表现更优的模型
+3. 优化策略
+- 对抗训练：FGM,PGD
+
+- 混合精度训练（FP16）
+
+- 模型融合：差异化多级模型融合系统。
+&nbsp;&nbsp;&nbsp;&nbsp;模型框架差异化：BERT-CRF & BERT-SPAN & BERT-MRC；
+&nbsp;&nbsp;&nbsp;&nbsp;训练数据差异化：更换随机种子、更换句子切分长度（256、512）
+&nbsp;&nbsp;&nbsp;&nbsp;多级模型融合策略: CRF/SPAN/MRC 5折交叉验证得到的模型进行第一级概率融合，将 logits平均后解码实体 CRF/SPAN/MRC 概率融合后的模型进行第二级投票融合，获取最终结果
+
+- 半监督学习：动态伪标签
+
+
+
+
+
 ### 小贤贤nice团队_亚军比赛攻略[ 原文链接](https://tianchi.aliyun.com/forum/postDetail?spm=5176.12586969.1002.6.25a33e5b7SqxIw&postId=154948)
 方案总结：
 1. 数据去噪:<br>
@@ -51,6 +76,3 @@
 方案总结：
 1. 数据预处理：长度分割，Lattice词表：加入专业词汇
 2. 模型构建，Roberta-{Flat-Lattice-layer}-{Softmax|CRF|Span}，对预训练模型进行再训练
-3. 
-
-
