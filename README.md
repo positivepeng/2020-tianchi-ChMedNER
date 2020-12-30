@@ -7,7 +7,8 @@
  - [2019BDCI互联网金融实体识别（单模第一，综合第二名思路与代码框架傻瓜式分享）](https://zhuanlan.zhihu.com/p/100884995)
  - [“达观杯”冠军分享：预训练模型彻底改变了NLP，但也不能忽略传统方法带来的提升](https://zhuanlan.zhihu.com/p/84717061)
  - [2019BDCI互联网金融实体识别复赛A榜第七，B榜第五](https://github.com/light8lee/2019-BDCI-FinancialEntityDiscovery)
-
+ - [非常好用的BERT-NER-Pytorch](https://github.com/lonePatient/BERT-NER-Pytorch)
+ 
 ## 赛后前排分享总结：
 #### 1. 数据预处理
 #### 2. 模型设计
