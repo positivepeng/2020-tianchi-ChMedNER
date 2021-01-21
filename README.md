@@ -14,30 +14,49 @@
 #### 2. 模型设计
 #### 3. 模型融合
 
-
 ### 门头沟战队_冠军比赛攻略[原文链接](https://tianchi.aliyun.com/forum/postDetail?postId=155393)
 1. 数据预处理
-    数据特点：长文本多、数据量少，实体不平衡，句子太长进行分割，
+    数据特点：长文本多、数据量少，实体不平衡，句子太长进行分割（代码中的处理方式就是根据标点符号先对句子进行分句，然后再重组，要求就是重组后的句子长度不超过510）
 2. 模型设计
-    baseline:BERT-CRF，细节
+baseline:BERT-CRF（不同于直接加CRF，中间还加了一个linear-relu-dropout结构作为中间层）
  - 预训练模型：选用 UER-large-24 layer[1]，UER在RoBerta-wwm框架下采用大规模优质中文语料继续训练，CLUE 任务中单模第一
  - 差分学习率：BERT层学习率2e-5；其他层学习率2e-3
  - 参数初始化：模型其他模块与BERT采用相同的初始化方式
- - 滑动参数平均：加权平均最后几个epoch模型的权重，得到更加平滑和表现更优的模型
+ - 滑动参数平均：加权平均最后几个epoch模型的权重，得到更加平滑和表现更优的模型（swa）
 3. 优化策略
-- 对抗训练：FGM,PGD
+- 对抗训练：FGM,PGD（提升模型泛化性能）
 
-- 混合精度训练（FP16）
+- 混合精度训练:FP16(加快训练速度)
 
 - 模型融合：差异化多级模型融合系统。
 &nbsp;&nbsp;&nbsp;&nbsp;模型框架差异化：BERT-CRF & BERT-SPAN & BERT-MRC；
 &nbsp;&nbsp;&nbsp;&nbsp;训练数据差异化：更换随机种子、更换句子切分长度（256、512）
 &nbsp;&nbsp;&nbsp;&nbsp;多级模型融合策略: CRF/SPAN/MRC 5折交叉验证得到的模型进行第一级概率融合，将 logits平均后解码实体 CRF/SPAN/MRC 概率融合后的模型进行第二级投票融合，获取最终结果
 
-- 半监督学习：动态伪标签
+- 半监督学习：动态伪标签（先使用训练数据得到一个最好的模型并结合投票策略对测试数据进行预测，得到的标签为伪标签，将其加入到训练数据中一同训练，计算loss是对是否是伪标签进行加权）
 
+##### 复赛第一代码解构(以下均为验证集结果)
+源代码地址：https://github.com/z814081807/DeepNER
 
+注：F1中括号中的数表示验证集最优结果出现的step
+模型描述：baseline 
+BERT-Type: bert-base
+|              | Accuracy  | Recall  | F1 score |
+| ------------ | ------------------ | ------------------ | ------------------ |
+| BERT-CRF | 0.6740 | 0.7561 | 0.7104(270) |
+| BERT-Span    | 0.6323 | 0.7626 | 0.6872(315) |
+| BERT-MRC     | 0.6500 | 0.7648 | 0.6986(2516) |
 
+下面在BERT-CRF模型上添加各种trick的对比：
+|              | Accuracy  | Recall  | F1 score |
+| ------------ | ------------------ | ------------------ | ------------------ |
+| BERT-CRF | 0.6740 | 0.7561 | 0.7104(270) |
+| BERT-CRF + weight_decay | 0.6848 | 0.7409 | 0.7106(450) |
+| roBERTa-CRF + weight_decay | 0.7115 | 0.7557 | 0.7303(340) |
+| roBERTa-CRF + weight_decay + pseudo_data | 0.7029 | 0.7694 | 0.7333(680) |
+| roBERTa-CRF + weight_decay + pseudo_data + swa | 0.7009 | 0.7702 | 0.7325(swa) |
+| roBERTa-CRF + weight_decay + pseudo_data + swa + pgd | 0.7031 | 0.7721 | 0.7347(680) |
+| roBERTa-CRF + weight_decay + pseudo_data + swa + fgm | 0.6954 | 0.7785 | 0.7328(612) |
 
 
 ### 小贤贤nice团队_亚军比赛攻略[ 原文链接](https://tianchi.aliyun.com/forum/postDetail?spm=5176.12586969.1002.6.25a33e5b7SqxIw&postId=154948)
